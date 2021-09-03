@@ -1,5 +1,8 @@
-from selenium import webdriver
 import random
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
 
 
 def get_content(driver):
@@ -56,35 +59,58 @@ def main():
         return
 
     driver = webdriver.Chrome()
-    driver.implicitly_wait(1)
-    driver.get("https://liferestart.syaro.io/view/")
-    age_max = 0
-    for i in range(remake_times):
-        age, contents = one_more_time(driver)
-        if age > age_max:
-            age_max = age
-        for age in contents.keys():
-            content_set = res.get(age, set())
-            content_set.add(contents[age])
-            res[age] = content_set
+    try:
+        driver.get("https://liferestart.syaro.io/view/")
+        try:
+            WebDriverWait(driver, 10).until(
+                expected_conditions.presence_of_element_located((By.ID, "restart"))
+            )
+        except Exception:
+            print("Can't load Remake Simulator for 10 seconds.")
+            return
 
-    with open("./remake.txt", "w", encoding="utf-8") as f:
-        f.write("You remake " + remake_times_str + " time(s).")
-        f.write("\n")
-        f.write("Your longest life is " + str(age_max) + " years old.")
-        f.write("\n")
-        age_list = list(res.keys())
-        age_list.sort()
-        for age in age_list:
-            f.write("Age " + str(age) + " :")
+        age_dict = dict()
+        for i in range(remake_times):
+            age, contents = one_more_time(driver)
+            age_count = age_dict.get(age, 0)
+            age_count += 1
+            age_dict[age] = age_count
+            for age in contents.keys():
+                content_set = res.get(age, set())
+                content_set.add(contents[age])
+                res[age] = content_set
+
+        ages = list(age_dict.keys())
+        ages.sort()
+        with open("./remake.txt", "w", encoding="utf-8") as f:
+            f.write("You remake %s time(s)." % remake_times_str)
             f.write("\n")
-            for life in res[age]:
-                f.write(life)
+
+            f.write("Your shortest life is %d year(s) old." % ages[0])
+            f.write("\n")
+            f.write("Your longest life is %d year(s) old." % ages[len(ages) - 1])
+            f.write("\n")
+
+            for age in ages:
+                f.write("%3d year(s) old: %d time(s)." % (age, age_dict[age]))
                 f.write("\n")
-
             f.write("\n")
 
-    driver.close()
+            age_list = list(res.keys())
+            age_list.sort()
+            for age in age_list:
+                f.write("Age %d:" % age)
+                f.write("\n")
+                for life in res[age]:
+                    f.write(life)
+                    f.write("\n")
+
+                f.write("\n")
+    except Exception as e:
+        print("Exception caught.")
+        print(e)
+    finally:
+        driver.close()
 
 
 if __name__ == "__main__":
