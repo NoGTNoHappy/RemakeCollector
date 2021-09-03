@@ -3,15 +3,16 @@ import random
 
 
 def get_content(driver):
-    content_set = set()
+    content = dict()
     lis = driver.find_elements_by_xpath("//ul[@id='lifeTrajectory']/*")
     for li in lis:
         texts = li.text.split("\n")
-        content_set.add(texts[1])
+        age_str = texts[0]
+        age = int(age_str[0:len(age_str) - 2])
+        content[age] = texts[1]
 
-    age_str = lis[len(lis) - 1].text.split("\n")[0]
-    age = int(age_str[0:len(age_str) - 2])
-    return age, content_set
+    age = max(content.keys())
+    return age, content
 
 
 def one_more_time(driver):
@@ -40,7 +41,7 @@ def one_more_time(driver):
 
 
 def main():
-    res_set = set()
+    res = dict()
     print("Please input remake times:")
     remake_times_str = input()
     remake_times = 0
@@ -62,16 +63,25 @@ def main():
         age, contents = one_more_time(driver)
         if age > age_max:
             age_max = age
-        for res in contents:
-            res_set.add(res)
+        for age in contents.keys():
+            content_set = res.get(age, set())
+            content_set.add(contents[age])
+            res[age] = content_set
 
     with open("./remake.txt", "w", encoding="utf-8") as f:
         f.write("You remake " + remake_times_str + " time(s).")
         f.write("\n")
         f.write("Your longest life is " + str(age_max) + " years old.")
         f.write("\n")
-        for life in res_set:
-            f.write(life)
+        age_list = list(res.keys())
+        age_list.sort()
+        for age in age_list:
+            f.write("Age " + str(age) + " :")
+            f.write("\n")
+            for life in res[age]:
+                f.write(life)
+                f.write("\n")
+
             f.write("\n")
 
     driver.close()
