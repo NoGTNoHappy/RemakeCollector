@@ -8,7 +8,10 @@ def get_content(driver):
     for li in lis:
         texts = li.text.split("\n")
         content_set.add(texts[1])
-    return content_set
+
+    age_str = lis[len(lis) - 1].text.split("\n")[0]
+    age = int(age_str[0:len(age_str) - 2])
+    return age, content_set
 
 
 def one_more_time(driver):
@@ -30,10 +33,10 @@ def one_more_time(driver):
     while not summary_btn.is_displayed():
         driver.find_element_by_id("lifeTrajectory").click()
 
-    once_set = get_content(driver)
+    age, once_set = get_content(driver)
     summary_btn.click()
     driver.find_element_by_id("again").click()
-    return once_set
+    return age, once_set
 
 
 def main():
@@ -54,11 +57,19 @@ def main():
     driver = webdriver.Chrome()
     driver.implicitly_wait(1)
     driver.get("https://liferestart.syaro.io/view/")
+    age_max = 0
     for i in range(remake_times):
-        for res in one_more_time(driver):
+        age, contents = one_more_time(driver)
+        if age > age_max:
+            age_max = age
+        for res in contents:
             res_set.add(res)
 
     with open("./remake.txt", "w", encoding="utf-8") as f:
+        f.write("You remake " + remake_times_str + " time(s).")
+        f.write("\n")
+        f.write("Your longest life is " + str(age_max) + " years old.")
+        f.write("\n")
         for life in res_set:
             f.write(life)
             f.write("\n")
