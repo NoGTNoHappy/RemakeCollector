@@ -46,10 +46,10 @@ def main():
         for res in one_more_time(driver):
             res_set.add(res)
 
-    with open("./remake.txt", "w") as f:
+    with open("./remake.txt", "w", encoding="utf-8") as f:
         for life in res_set:
             f.write(life)
-            f.write("\r\n")
+            f.write("\n")
 
     driver.close()
 
