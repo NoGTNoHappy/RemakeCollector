@@ -37,12 +37,24 @@ def one_more_time(driver):
 
 
 def main():
+    res_set = set()
+    print("Please input remake times:")
+    remake_times_str = input()
+    remake_times = 0
+    while remake_times == 0:
+        try:
+            remake_times = int(remake_times_str)
+        except ValueError:
+            print("Please input a number.")
+
+    if remake_times > 100 or remake_times < 0:
+        print("Wrong number, needs 1~ 99")
+        return
+
     driver = webdriver.Chrome()
     driver.implicitly_wait(1)
     driver.get("https://liferestart.syaro.io/view/")
-
-    res_set = set()
-    for i in range(10):
+    for i in range(remake_times):
         for res in one_more_time(driver):
             res_set.add(res)
 
