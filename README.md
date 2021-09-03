@@ -1,0 +1,2 @@
+# RemakeCollector
+看看人生能遇到多少事儿
